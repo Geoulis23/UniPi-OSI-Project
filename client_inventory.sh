@@ -48,14 +48,21 @@ add_client() {
 delete_client() {
     echo -n "Εισάγετε κριτήρια για διαγραφή: "
     read criteria
-    grep -i "$criteria" $FILENAME
-    echo -n "Επιβεβαίωση διαγραφής (y/n): "
-    read confirm
-    if [ "$confirm" = "y" ]; then
-        grep -vi "$criteria" $FILENAME > temp && mv temp $FILENAME
-        echo "Η εγγραφή διαγράφηκε επιτυχώς."
+    matching_lines=$(grep -i "$criteria" $FILENAME)
+
+    if [ -z "$matching_lines" ]; then
+        echo "Δεν βρέθηκαν εγγραφές με τα κριτήρια που δώσατε."
     else
-        echo "Η διαγραφή ακυρώθηκε."
+        echo "Βρέθηκαν οι παρακάτω εγγραφές:"
+        echo "$matching_lines"
+        echo -n "Επιβεβαίωση διαγραφής (y/n): "
+        read confirm
+        if [ "$confirm" = "y" ]; then
+            grep -iv "$criteria" $FILENAME > temp && mv temp $FILENAME
+            echo "Η εγγραφή διαγράφηκε επιτυχώς."
+        else
+            echo "Η διαγραφή ακυρώθηκε."
+        fi
     fi
 }
 
