@@ -48,22 +48,31 @@ add_client() {
 delete_client() {
     echo -n "Εισάγετε κριτήρια για διαγραφή (π.χ. όνομα ή email): "
     read criteria
-    matching_lines=$(grep -i "$criteria" $FILENAME)
+    matching_lines=($(grep -i "$criteria" $FILENAME))
 
-    if [ -z "$matching_lines" ]; then
+    if [ ${#matching_lines[@]} -eq 0 ]; then
         echo "Δεν βρέθηκαν εγγραφές με τα κριτήρια που δώσατε."
     else
         echo "Βρέθηκαν οι παρακάτω εγγραφές:"
-        echo "$matching_lines"
-        echo -n "Εισάγετε την ακριβή εγγραφή που θέλετε να διαγράψετε: "
-        read exact_entry
-        echo -n "Επιβεβαίωση διαγραφής (y/n): "
-        read confirm
-        if [ "$confirm" = "y" ]; then
-            grep -Fxv "$exact_entry" $FILENAME > temp && mv temp $FILENAME
-            echo "Η εγγραφή διαγράφηκε επιτυχώς."
+        for i in "${!matching_lines[@]}"; do
+            echo "$i: ${matching_lines[$i]}"
+        done
+
+        echo -n "Επιλέξτε τον αριθμό της εγγραφής που θέλετε να διαγράψετε: "
+        read selection
+
+        if [[ $selection =~ ^[0-9]+$ ]] && [ $selection -ge 0 ] && [ $selection -lt ${#matching_lines[@]} ]; then
+            selected_entry=${matching_lines[$selection]}
+            echo -n "Επιβεβαίωση διαγραφής της εγγραφής '$selected_entry' (y/n): "
+            read confirm
+            if [ "$confirm" = "y" ]; then
+                grep -Fxv "$selected_entry" $FILENAME > temp && mv temp $FILENAME
+                echo "Η εγγραφή διαγράφηκε επιτυχώς."
+            else
+                echo "Η διαγραφή ακυρώθηκε."
+            fi
         else
-            echo "Η διαγραφή ακυρώθηκε."
+            echo "Μη έγκυρη επιλογή."
         fi
     fi
 }
